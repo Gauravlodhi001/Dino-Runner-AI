@@ -1,6 +1,9 @@
 import { Dino } from './Dino';
 import { ObstacleManager } from './ObstacleManager';
 import { AIController } from '../ai/AIController';
+import { SoundManager } from './SoundManager';
+import { ParticleManager } from './ParticleManager';
+import { Background } from './Background';
 
 export class Game {
     canvas: HTMLCanvasElement;
@@ -19,6 +22,9 @@ export class Game {
     isPlaying: boolean;
     isGameOver: boolean;
     isAIEnabled: boolean;
+    soundManager: SoundManager;
+    particleManager: ParticleManager;
+    background: Background;
 
     constructor(canvasId: string) {
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -27,11 +33,14 @@ export class Game {
         this.width = 0;
         this.height = 0;
         this.gameSpeed = 0;
+        this.soundManager = new SoundManager();
+        this.particleManager = new ParticleManager();
+        this.background = new Background(this.width, this.height);
 
         this.resize();
         window.addEventListener('resize', () => this.resize());
 
-        this.dino = new Dino(this.height);
+        this.dino = new Dino(this.height, this.soundManager, this.particleManager);
         this.obstacleManager = new ObstacleManager(this.width, this.height);
         this.aiController = new AIController();
 
@@ -52,6 +61,7 @@ export class Game {
         this.height = this.canvas.parentElement?.clientHeight || 400;
         this.canvas.width = this.width;
         this.canvas.height = this.height;
+        if (this.background) this.background.resize(this.width, this.height);
 
         if (this.dino) this.dino.groundY = this.height - 47 - 10;
         if (this.obstacleManager) {
@@ -87,6 +97,7 @@ export class Game {
         this.isGameOver = false;
         this.dino.reset(this.height);
         this.obstacleManager.reset();
+        this.particleManager.reset();
     }
 
     loop() {
@@ -103,7 +114,14 @@ export class Game {
     }
 
     update() {
+        const prevScore = Math.floor(this.score);
         this.score += 0.05;
+        const newScore = Math.floor(this.score);
+
+        if (newScore > 0 && newScore % 100 === 0 && newScore !== prevScore) {
+            this.soundManager.playScore();
+        }
+
         // Speed increases slowly
         this.speed += 0.0005;
 
@@ -113,6 +131,8 @@ export class Game {
 
         this.dino.update();
         this.obstacleManager.update(this.speed);
+        this.particleManager.update();
+        this.background.update(this.speed);
 
         // Collision Detection
         for (const obs of this.obstacleManager.obstacles) {
@@ -123,6 +143,8 @@ export class Game {
                 this.dino.y + this.dino.height > obs.y
             ) {
                 this.isGameOver = true;
+                this.soundManager.playDie();
+                this.particleManager.spawnExplosion(this.dino.x + this.dino.width / 2, this.dino.y + this.dino.height / 2);
             }
         }
 
@@ -132,6 +154,7 @@ export class Game {
 
     draw() {
         this.ctx.clearRect(0, 0, this.width, this.height);
+        this.background.draw(this.ctx);
 
         // Draw ground
         this.ctx.strokeStyle = '#334155';
@@ -143,6 +166,7 @@ export class Game {
 
         this.dino.draw(this.ctx);
         this.obstacleManager.draw(this.ctx);
+        this.particleManager.draw(this.ctx);
     }
 
     handleInput(e: KeyboardEvent) {

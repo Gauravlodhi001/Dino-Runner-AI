@@ -1,3 +1,6 @@
+import { SoundManager } from './SoundManager';
+import { ParticleManager } from './ParticleManager';
+
 export class Dino {
   x: number;
   y: number;
@@ -9,8 +12,10 @@ export class Dino {
   isJumping: boolean;
   isDucking: boolean;
   groundY: number;
+  soundManager: SoundManager;
+  particleManager: ParticleManager;
 
-  constructor(canvasHeight: number) {
+  constructor(canvasHeight: number, soundManager: SoundManager, particleManager: ParticleManager) {
     this.width = 60; // Hitbox width (Bigger)
     this.height = 60; // Hitbox height (Bigger)
     this.x = 50;
@@ -21,6 +26,8 @@ export class Dino {
     this.gravity = 1.0;
     this.isJumping = false;
     this.isDucking = false;
+    this.soundManager = soundManager;
+    this.particleManager = particleManager;
     // No sprite image needed for procedural
   }
 
@@ -34,12 +41,24 @@ export class Dino {
         this.y = this.groundY;
         this.dy = 0;
         this.isJumping = false;
+        // Landing Dust
+        this.particleManager.spawnDust(this.x + this.width / 2, this.y + this.height);
       }
     } else if (this.isDucking) {
       this.height = 30; // Duck hitbox height
       this.width = 70;  // Duck hitbox width
       this.y = this.groundY + (60 - 30); // Adjust for height difference
+
+      // Ducking Dust (less frequent)
+      if (Math.random() > 0.8) {
+        this.particleManager.spawnDust(this.x + 10, this.y + this.height);
+      }
     } else {
+      // Running Dust
+      if (Math.random() > 0.9) {
+        this.particleManager.spawnDust(this.x + 20, this.y + this.height);
+      }
+
       // Reset dimensions
       this.width = 60;
       this.height = 60;
@@ -51,6 +70,7 @@ export class Dino {
     if (!this.isJumping && !this.isDucking) {
       this.isJumping = true;
       this.dy = this.jumpForce;
+      this.soundManager.playJump();
     }
   }
 
