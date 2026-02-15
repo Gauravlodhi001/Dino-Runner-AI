@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dino Runner AI</title>
+</head>
+
+<body>
+  <div id="app">
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- UI Overlay -->
+    <div id="ui-layer">
+      <div id="start-screen" class="screen">
+        <h1>DINO RUNNER <span class="ai-badge">AI</span></h1>
+        <p>Press Space to Start</p>
+        <button id="ai-toggle-btn" class="btn">Enable AI Mode</button>
+      </div>
+
+      <div id="game-over-screen" class="screen hidden">
+        <h1>GAME OVER</h1>
+        <p id="final-score">Score: 0</p>
+        <div class="button-group">
+          <button id="restart-btn" class="btn">Try Again</button>
+          <button id="game-over-ai-toggle-btn" class="btn">Enable AI</button>
+          <button id="quit-btn" class="btn btn-danger">Quit</button>
+        </div>
+      </div>
+
+      <div id="hud">
+        <div class="score-container">Score: <span id="score">0</span></div>
+        <div class="high-score-container">HI: <span id="high-score">0</span></div>
+        <div id="ai-status" class="hidden">AI ACTIVE</div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
